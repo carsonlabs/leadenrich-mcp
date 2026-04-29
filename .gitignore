@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+.env.*
+
+# Local dev shims (machine-specific paths)
+python.cmd
+python_shim.cmd
+
+# Mcpize local state
+.mcpize/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Logs
+*.log

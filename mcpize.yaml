@@ -1,0 +1,17 @@
+name: leadenrich-mcp
+description: Waterfall lead enrichment MCP server — cascades through Apollo, Clearbit, and Hunter for maximum data coverage. BYOK model.
+runtime: container
+dockerfile: Dockerfile
+transport: stdio
+bridge:
+  mode: stdio
+credentials:
+  - name: APOLLO_API_KEY
+    description: Apollo.io API key for lead enrichment
+    required: false
+  - name: CLEARBIT_API_KEY
+    description: Clearbit API key for company/contact enrichment
+    required: false
+  - name: HUNTER_API_KEY
+    description: Hunter.io API key for email finding
+    required: false

@@ -52,6 +52,20 @@ CLEARBIT_KEY = os.getenv("CLEARBIT_API_KEY", "")
 HUNTER_KEY = os.getenv("HUNTER_API_KEY", "")
 SERVER_API_KEY = os.getenv("LEADENRICH_API_KEY", "")
 
+# --- MCPize License Gating ---
+MCPIZE_LICENSE_KEY = os.getenv("MCPIZE_LICENSE_KEY", "")
+IS_PRO = bool(MCPIZE_LICENSE_KEY)
+
+PRO_UPGRADE = {
+    "error": "Pro feature — license key required",
+    "tool_tier": "pro",
+    "message": "This tool requires a LeadEnrich MCP Pro license. Free tools: enrich_lead (single, Hunter only), check_usage, health_check.",
+    "upgrade_url": "https://mcpize.com/mcp/leadenrich-mcp?ref=YHCCR",
+    "pricing": "$29/mo or $290/yr",
+    "free_tools": ["enrich_lead (single lookup, Hunter only)", "check_usage", "health_check"],
+    "pro_tools": ["enrich_lead (full waterfall)", "find_email", "enrich_company", "enrich_batch"],
+}
+
 log = logging.getLogger("leadenrich")
 logging.basicConfig(
     level=logging.INFO,
@@ -172,11 +186,16 @@ async def enrich_lead(
     if err := await _guard(client_key):
         return err
 
+    # Free tier: restrict to Hunter only (no waterfall)
+    effective_providers = providers
+    if not IS_PRO and not providers:
+        effective_providers = ["hunter"]
+
     merged, providers_hit = await waterfall_enrich(
         apollo_key=APOLLO_KEY, clearbit_key=CLEARBIT_KEY, hunter_key=HUNTER_KEY,
         email=email, domain=domain,
         first_name=first_name, last_name=last_name,
-        providers=providers,
+        providers=effective_providers,
     )
 
     _check_and_record(client_key, providers_hit)
@@ -206,6 +225,9 @@ async def find_email(
     Returns:
         Found email with confidence score and verification status.
     """
+    if not IS_PRO:
+        return PRO_UPGRADE
+
     client_key = api_key or SERVER_API_KEY or "anonymous"
     if err := await _guard(client_key):
         return err
@@ -278,6 +300,9 @@ async def enrich_company(
     Returns:
         Company profile with firmographic data.
     """
+    if not IS_PRO:
+        return PRO_UPGRADE
+
     client_key = api_key or SERVER_API_KEY or "anonymous"
     if err := await _guard(client_key):
         return err
@@ -318,6 +343,9 @@ async def enrich_batch(
     Returns:
         List of enriched lead profiles with per-lead attribution and batch summary.
     """
+    if not IS_PRO:
+        return PRO_UPGRADE
+
     if not leads:
         return {"error": "No leads provided"}
     if len(leads) > 25:
